@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 const int MAX_ROOMS = 100;
@@ -32,7 +33,7 @@ void gnomeSort(T arr[], int size, Compare comp) {
             i = j;
             j++;
         } else {
-            std::swap(arr[i - 1], arr[i]);
+            swap(arr[i - 1], arr[i]);
             i--;
             if (i == 0) {
                 i = j;
@@ -51,6 +52,23 @@ void printRooms(const Room rooms[], int size) {
     }
 }
 
+int jumpSearch(Room arr[], int size, int target) {
+    int step = sqrt(size);
+    int prev = 0;
+
+    while (arr[min(step, size) - 1].number < target) {
+        prev = step;
+        step += sqrt(size);
+        if (prev >= size) return -1;
+    }
+
+    for (int i = prev; i < min(step, size); ++i) {
+        if (arr[i].number == target) return i;
+    }
+
+    return -1;
+}
+
 int main() {
     const int n = 8;
     Room rooms[n] = {
@@ -64,12 +82,10 @@ int main() {
         {108, 20, false, 0}
     };
 
-    cout << "List of rooms:\n";
-    printRooms(rooms, n);
-
     CapacityCount rating[MAX_ROOMS];
     int ratingSize = 0;
 
+    // підрахунок місткостей
     for (int i = 0; i < n; ++i) {
         int index = findCapacityIndex(rating, ratingSize, rooms[i].capacity);
         if (index == -1) {
@@ -81,42 +97,75 @@ int main() {
         }
     }
 
-    // Компаратори
+    // компаратори
     auto compByCountDesc = [](const CapacityCount& a, const CapacityCount& b) {
         return a.count < b.count;
     };
-
-    auto compByComputersDesc = [](const Room& a, const Room& b) {
-        return a.computers < b.computers;
+    auto compByNumberAsc = [](const Room& a, const Room& b) {
+        return a.number > b.number;
     };
 
-    auto compByBoard = [](const Room& a, const Room& b) {
-        return !a.hasBoard && b.hasBoard;
-    };
+    int choice;
+    do {
+        cout << "\n=== МЕНЮ ===\n";
+        cout << "1. Вивести всі аудиторії\n";
+        cout << "2. Підрахувати кількість аудиторій за місткістю\n";
+        cout << "3. Побудувати рейтинг кількості кімнат по місткості\n";
+        cout << "4. Пошук аудиторії за номером (jump search)\n";
+        cout << "0. Вихід\n";
+        cout << "Ваш вибір: ";
+        cin >> choice;
 
-    auto compByCapacityAsc = [](const Room& a, const Room& b) {
-        return a.capacity > b.capacity;
-    };
+        switch (choice) {
+            case 1:
+                cout << "\nСписок аудиторій:\n";
+                printRooms(rooms, n);
+                break;
 
-    gnomeSort(rating, ratingSize, compByCountDesc);
+            case 2:
+                cout << "\nКількість аудиторій за місткістю:\n";
+                for (int i = 0; i < ratingSize; ++i) {
+                    cout << "Місткість: " << rating[i].capacity
+                         << " - " << rating[i].count << " аудиторій\n";
+                }
+                break;
 
-    cout << "\nCapacity rating by number of rooms:\n";
-    for (int i = 0; i < ratingSize; ++i) {
-        cout << "Capacity: " << rating[i].capacity
-             << " - " << rating[i].count << " room(s)\n";
-    }
+            case 3:
+                gnomeSort(rating, ratingSize, compByCountDesc);
+                cout << "\nРейтинг кількості кімнат по місткості:\n";
+                for (int i = 0; i < ratingSize; ++i) {
+                    cout << "Місткість: " << rating[i].capacity
+                         << " - " << rating[i].count << " аудиторій\n";
+                }
+                break;
 
-    gnomeSort(rooms, n, compByComputersDesc);
-    cout << "\nSorted by number of computers (descending):\n";
-    printRooms(rooms, n);
+            case 4: {
+                gnomeSort(rooms, n, compByNumberAsc);  // сортуємо перед jump search
+                int target;
+                cout << "Введіть номер аудиторії для пошуку: ";
+                cin >> target;
+                int index = jumpSearch(rooms, n, target);
+                if (index != -1) {
+                    cout << "\nЗнайдено: Room #" << rooms[index].number
+                         << " | Seats: " << rooms[index].capacity
+                         << " | Board: " << (rooms[index].hasBoard ? "yes" : "no")
+                         << " | Computers: " << rooms[index].computers << endl;
+                } else {
+                    cout << "Аудиторія з таким номером не знайдена.\n";
+                }
+                break;
+            }
 
-    gnomeSort(rooms, n, compByBoard);
-    cout << "\nSorted by board availability (yes first):\n";
-    printRooms(rooms, n);
+            case 0:
+                cout << "Вихід з програми.\n";
+                break;
 
-    gnomeSort(rooms, n, compByCapacityAsc);
-    cout << "\nSorted by capacity (ascending):\n";
-    printRooms(rooms, n);
+            default:
+                cout << "Невірний вибір!\n";
+                break;
+        }
+
+    } while (choice != 0);
 
     return 0;
 }
