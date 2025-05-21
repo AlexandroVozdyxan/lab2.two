@@ -24,37 +24,19 @@ int findCapacityIndex(CapacityCount arr[], int size, int capacity) {
     return -1;
 }
 
-void sortByCount(CapacityCount arr[], int size) {
-    for (int i = 0; i < size - 1; ++i) {
-        for (int j = i + 1; j < size; ++j) {
-            if (arr[j].count > arr[i].count) {
-                CapacityCount temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-    }
-}
-
-void sortByComputers(Room arr[], int size) {
-    for (int i = 0; i < size - 1; ++i) {
-        for (int j = i + 1; j < size; ++j) {
-            if (arr[j].computers > arr[i].computers) {
-                Room temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
-            }
-        }
-    }
-}
-
-void sortByBoard(Room arr[], int size) {
-    for (int i = 0; i < size - 1; ++i) {
-        for (int j = i + 1; j < size; ++j) {
-            if (arr[j].hasBoard && !arr[i].hasBoard) {
-                Room temp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = temp;
+template <typename T, typename Compare>
+void gnomeSort(T arr[], int size, Compare comp) {
+    int i = 1, j = 2;
+    while (i < size) {
+        if (!comp(arr[i], arr[i - 1])) {
+            i = j;
+            j++;
+        } else {
+            std::swap(arr[i - 1], arr[i]);
+            i--;
+            if (i == 0) {
+                i = j;
+                j++;
             }
         }
     }
@@ -99,7 +81,24 @@ int main() {
         }
     }
 
-    sortByCount(rating, ratingSize);
+    // Компаратори
+    auto compByCountDesc = [](const CapacityCount& a, const CapacityCount& b) {
+        return a.count < b.count;
+    };
+
+    auto compByComputersDesc = [](const Room& a, const Room& b) {
+        return a.computers < b.computers;
+    };
+
+    auto compByBoard = [](const Room& a, const Room& b) {
+        return !a.hasBoard && b.hasBoard;
+    };
+
+    auto compByCapacityAsc = [](const Room& a, const Room& b) {
+        return a.capacity > b.capacity;
+    };
+
+    gnomeSort(rating, ratingSize, compByCountDesc);
 
     cout << "\nCapacity rating by number of rooms:\n";
     for (int i = 0; i < ratingSize; ++i) {
@@ -107,12 +106,16 @@ int main() {
              << " - " << rating[i].count << " room(s)\n";
     }
 
-    sortByComputers(rooms, n);
+    gnomeSort(rooms, n, compByComputersDesc);
     cout << "\nSorted by number of computers (descending):\n";
     printRooms(rooms, n);
 
-    sortByBoard(rooms, n);
+    gnomeSort(rooms, n, compByBoard);
     cout << "\nSorted by board availability (yes first):\n";
+    printRooms(rooms, n);
+
+    gnomeSort(rooms, n, compByCapacityAsc);
+    cout << "\nSorted by capacity (ascending):\n";
     printRooms(rooms, n);
 
     return 0;
