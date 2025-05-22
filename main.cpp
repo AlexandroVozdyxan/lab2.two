@@ -70,6 +70,10 @@ int jumpSearch(Room arr[], int size, int target) {
 }
 
 int main() {
+#ifdef _WIN32
+    system("chcp 65001 > nul");
+#endif
+
     const int n = 8;
     Room rooms[n] = {
         {101, 30, true, 10},
@@ -85,7 +89,6 @@ int main() {
     CapacityCount rating[MAX_ROOMS];
     int ratingSize = 0;
 
-    // підрахунок місткостей
     for (int i = 0; i < n; ++i) {
         int index = findCapacityIndex(rating, ratingSize, rooms[i].capacity);
         if (index == -1) {
@@ -97,7 +100,6 @@ int main() {
         }
     }
 
-    // компаратори
     auto compByCountDesc = [](const CapacityCount& a, const CapacityCount& b) {
         return a.count < b.count;
     };
@@ -107,64 +109,52 @@ int main() {
 
     int choice;
     do {
-        cout << "\n=== МЕНЮ ===\n";
-        cout << "1. Вивести всі аудиторії\n";
-        cout << "2. Підрахувати кількість аудиторій за місткістю\n";
-        cout << "3. Побудувати рейтинг кількості кімнат по місткості\n";
-        cout << "4. Пошук аудиторії за номером (jump search)\n";
-        cout << "0. Вихід\n";
-        cout << "Ваш вибір: ";
+        cout << "\n=== MENU ===\n";
+        cout << "1. Show rooms\n";
+        cout << "2. Show room counts by capacity\n";
+        cout << "3. Show capacity rating\n";
+        cout << "4. Search room by number\n";
+        cout << "0. Exit\n";
+        cout << "Choice: ";
         cin >> choice;
 
         switch (choice) {
             case 1:
-                cout << "\nСписок аудиторій:\n";
                 printRooms(rooms, n);
                 break;
-
             case 2:
-                cout << "\nКількість аудиторій за місткістю:\n";
                 for (int i = 0; i < ratingSize; ++i) {
-                    cout << "Місткість: " << rating[i].capacity
-                         << " - " << rating[i].count << " аудиторій\n";
+                    cout << "Capacity: " << rating[i].capacity
+                         << " - " << rating[i].count << endl;
                 }
                 break;
-
             case 3:
                 gnomeSort(rating, ratingSize, compByCountDesc);
-                cout << "\nРейтинг кількості кімнат по місткості:\n";
                 for (int i = 0; i < ratingSize; ++i) {
-                    cout << "Місткість: " << rating[i].capacity
-                         << " - " << rating[i].count << " аудиторій\n";
+                    cout << "Capacity: " << rating[i].capacity
+                         << " - " << rating[i].count << endl;
                 }
                 break;
-
             case 4: {
-                gnomeSort(rooms, n, compByNumberAsc);  // сортуємо перед jump search
+                gnomeSort(rooms, n, compByNumberAsc);
                 int target;
-                cout << "Введіть номер аудиторії для пошуку: ";
                 cin >> target;
                 int index = jumpSearch(rooms, n, target);
                 if (index != -1) {
-                    cout << "\nЗнайдено: Room #" << rooms[index].number
+                    cout << "Room #" << rooms[index].number
                          << " | Seats: " << rooms[index].capacity
                          << " | Board: " << (rooms[index].hasBoard ? "yes" : "no")
                          << " | Computers: " << rooms[index].computers << endl;
                 } else {
-                    cout << "Аудиторія з таким номером не знайдена.\n";
+                    cout << "Not found\n";
                 }
                 break;
             }
-
             case 0:
-                cout << "Вихід з програми.\n";
                 break;
-
             default:
-                cout << "Невірний вибір!\n";
                 break;
         }
-
     } while (choice != 0);
 
     return 0;
