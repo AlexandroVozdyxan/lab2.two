@@ -104,7 +104,7 @@ int main() {
         return a.count < b.count;
     };
     auto compByNumberAsc = [](const Room& a, const Room& b) {
-        return a.number > b.number;
+        return a.number < b.number;
     };
 
     int choice;
